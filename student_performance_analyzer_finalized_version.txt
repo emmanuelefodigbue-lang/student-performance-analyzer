@@ -1,0 +1,264 @@
+
+print("="*60)
+print("STUDENT PERFORMANCE ANALYZER".center(60))
+print("="*60)
+#===============================================================================
+#1. INPUT VALIDATION FUNCTIONS
+#===============================================================================
+
+# Validate the number of students
+def get_number_of_students():
+    while True:
+        try:
+            number_of_students = int(input("Enter number of students: "))
+            if number_of_students > 0:
+                return number_of_students
+            print("Invalid input! Please enter a number greater than 0")
+        except ValueError:
+            print("Invalid input! Please enter numbers only")
+
+# Validate student names
+def get_valid_name():
+    while True:
+        name = input("Enter student's name: ")
+        if name.replace(" ", "").isalpha():
+            return name
+        print("Invalid input! Please enter letters only")
+
+# Validate student scores
+def get_valid_scores(subject):
+    while True:
+        try:
+            score = int(input(f"Enter {subject} Score: "))
+            if 0 <= score <= 100 :
+                return score
+            print("Invalid input! Please enter a number between 0 and 100")
+        except ValueError:
+
+            print("Invalid input! Please enter numbers only")
+
+#===============================================================================
+#2. GRADE AND REMARK CALCULATION
+#===============================================================================
+def get_grade(score):
+    if score >= 70:
+        return "A", "Excellent"
+    elif score >= 60:
+        return "B", "Very Good"
+    elif score >= 50:
+        return "C", "Good"
+    elif score >= 45:
+        return "D", "Fair"
+    elif score >= 40:
+        return "E", "Pass"
+    else:
+        return "F", "Fail"
+# ===============================================================================
+#3. ORDINAL POSITION FORMATTING
+# ===============================================================================
+def get_ordinal(position):
+    if 11 <= position % 100 <= 13:
+        suffix = "th"
+    elif position % 10 == 1:
+        suffix = "st"
+    elif position % 10 == 2:
+        suffix = "nd"
+    elif position % 10 == 3:
+        suffix = "rd"
+    else:
+        suffix = "th"
+    return f"{position}{suffix}"
+#===============================================================================
+#4. SUBJECTS AND STUDENT DATA
+#===============================================================================
+subjects = [
+    "Mathematics",
+    "English",
+    "Chemistry",
+    "Biology",
+    "Physics"
+]
+
+students = []
+
+#===============================================================================
+#5. COLLECT STUDENT INFORMATION AND SCORES
+#===============================================================================
+
+for i in range(get_number_of_students()):
+    print("\n"+"="*60)
+    print(f"Student {i+1}")
+    print("="*60)
+    name = get_valid_name()
+    scores = {}
+    for subject in subjects:
+        score = get_valid_scores(subject)
+        grade, remark = get_grade(score)
+        scores[subject] = {
+            "score": score,
+            "grade": grade,
+            "remark": remark
+        }
+
+    total_score = 0
+    for subject in subjects:
+        total_score += scores[subject]["score"]
+    average_score = total_score / len(subjects)
+    overall_grade, overall_remark = get_grade(average_score)
+
+    student = {
+    "name": name,
+    "scores":scores,
+    "total_score": total_score,
+    "average_score": average_score,
+    "overall_grade": overall_grade,
+    "overall_remark": overall_remark
+    }
+    students.append(student)
+
+#=========================================================================
+#6. SORT STUDENTS BY AVERAGE SCORE
+#=========================================================================
+students.sort(key = lambda student: student['average_score'], reverse = True)
+
+#===============================================================================
+#7. DISPLAY INDIVIDUAL STUDENT REPORTS
+#===============================================================================
+print("="*60)
+print("STUDENT REPORT".center(60))
+print("="*60)
+
+# Assign Positions
+previous_average = None
+position = 0
+for student in students:
+    if student['average_score'] != previous_average:
+        position += 1
+    student['position'] = position
+    previous_average = student['average_score']
+
+# Display Student Report
+    print(f"\nName: {student['name']}")
+    print("-"*60)
+    print(f"{'subject':<15}{'Score':^10}{'Grade':^10}{'Remark'}")
+    print("-"*60)
+    for subject, details in student['scores'].items():
+        print(
+        f"{subject:<15}"
+        f"{details['score']:^10}"
+        f"{details['grade']:^10}"
+        f"{details['remark']}")
+    print("-"*60)
+    print(f"{'Total Score':<15}: {student['total_score']}")
+    print(f"{'Average Score':<15}: {student['average_score']:.2f}")
+    print(f"{'Overall Grade':<15}: {student['overall_grade']}")
+    print(f"{'Overall Remark':<15}: {student['overall_remark']}")
+    print(f"{'Position':<15}: {get_ordinal(student['position'])}")
+
+#===============================================================================
+#8. GRADE DISTRIBUTION
+#===============================================================================
+print("\n"+"="*60)
+print("GRADE DISTRIBUTION".center(60))
+print("="*60)
+
+print()
+
+grade_distribution = {
+  "A":0,
+  "B":0,
+  "C":0,
+  "D":0,
+  "E":0,
+  "F":0
+}
+for student in students:
+    grade_distribution[student['overall_grade']] += 1
+
+print(f"{'S/N':<7}{'Name':<20}{'Overall Grade'}")
+print("-"*60)
+for index, student in enumerate(students, start = 1):
+    print(f"{index:<7}{student['name']:<20}  {student['overall_grade']}")
+
+print()
+for grade, count in grade_distribution.items():
+    print(f"Grade {grade} students = {count}")
+
+#===============================================================================
+#9. HIGHEST AND LOWEST AVERAGES
+#===============================================================================
+highest_average = max (student['average_score'] for student in students)
+lowest_average = min (student['average_score'] for student in students)
+
+highest_students = []
+lowest_students = []
+for student in students:
+    if student['average_score'] == highest_average:
+        highest_students.append(student)
+    if student['average_score'] == lowest_average:
+        lowest_students.append(student)
+
+#===============================================================================
+#10. CLASS AVERAGE
+#===============================================================================
+sum_of_averages = 0
+for student in students:
+    sum_of_averages += student['average_score']
+class_average = sum_of_averages/len(students)
+
+#===============================================================================
+#11. PASS AND FAIL STATISTICS
+#===============================================================================
+passing_grades = ["A","B","C","D","E"]
+
+total_passes = 0
+for grade in passing_grades:
+    total_passes += grade_distribution[grade]
+total_fails = grade_distribution["F"]
+percentage_pass = total_passes/len(students)*100
+percentage_fail = total_fails/len(students)*100
+#===============================================================================
+#12. CLASS PERFORMANCE REPORT
+#===============================================================================
+print("\n"+ "="*60)
+print("CLASS REPORT".center(60))
+print("="*60)
+print(f"Total Students =  {len(students)}")
+print(f"Sum of Averages =   {sum_of_averages:.2f}")
+print(f"Class Average =   {class_average:.2f}")
+print(f"Highest Average = {highest_average:.2f}")
+print(f"Lowest Average =  {lowest_average:.2f}")
+
+print()
+print(f"Total Passes = {total_passes}")
+print(f"Total Fails  = {total_fails}")
+print(f"Pass Rate    = {percentage_pass:.2f}%")
+print(f"Fail Rate    = {percentage_fail:.2f}%")
+
+print()
+
+#=========================================================================
+#13. HIGHEST PERFORMING  STUDENTS
+#=========================================================================
+print("Highest Performing Students")
+
+for count, student in enumerate (highest_students, start = 1):
+        print(f"{count}. {student['name']} = {student['average_score']:.2f}")
+
+#=========================================================================
+#14. LOWEST PERFORMING STUDENTS
+#=========================================================================
+print("\nLowest Performing Students")
+for count, student in enumerate (lowest_students, start = 1):
+        print(f"{count}. {student['name']} = {student['average_score']:.2f}")
+#=========================================================================
+#15. END OF PROGRAM
+#=========================================================================
+print()
+print("="*60)
+print("END OF PROGRAM".center(60))
+print("="*60)
+
+
+
+
